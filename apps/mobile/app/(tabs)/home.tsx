@@ -3,7 +3,7 @@ import ProductCard from '../../components/ProductCard';
 import { products } from '../../data/products';
 import { useAppState } from '../../context/AppStateContext';
 import { colors } from '../../theme/colors';
-  import { Link } from 'expo-router';
+import { Link } from 'expo-router';
 import React from 'react';
 
 const allCategories = ['All','Beer','Wine','Whisky','Rum','Vodka','Brandy'] as const;
