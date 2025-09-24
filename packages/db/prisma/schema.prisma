@@ -8,16 +8,19 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String
-  phone     String?
-  address   String?
-  image     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  orders    Order[]
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  password      String
+  phone         String?
+  address       String?
+  dob           String?  // YYYY-MM-DD format
+  aadhaarLast4  String?  // Last 4 digits only
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  orders        Order[]
+  cartItems     CartItem[]
 }
 
 model Category {
@@ -30,28 +33,34 @@ model Category {
 model Product {
   id          String      @id @default(cuid())
   name        String
-  description String
-  price       Int
+  brand       String
+  description String?
+  price       Int         // Price in paise (INR * 100)
   image       String
+  volumeMl    Int?        // Volume in milliliters
+  abv         Float?      // Alcohol by volume percentage
+  origin      String?     // Country/region of origin
   stock       Int         @default(100)
   rating      Float?      @default(4.2)
   category    Category    @relation(fields: [categoryId], references: [id])
   categoryId  String
   orderItems  OrderItem[]
+  cartItems   CartItem[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
 
 model Order {
-  id          String      @id @default(cuid())
-  user        User        @relation(fields: [userId], references: [id])
-  userId      String
-  status      OrderStatus @default(PROCESSING)
-  items       OrderItem[]
-  total       Int
-  address     String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id            String      @id @default(cuid())
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String
+  status        OrderStatus @default(PLACED)
+  items         OrderItem[]
+  total         Int         // Total in paise (INR * 100)
+  address       String
+  paymentMethod String      @default("COD")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 model OrderItem {
@@ -61,12 +70,25 @@ model OrderItem {
   product   Product  @relation(fields: [productId], references: [id])
   productId String
   quantity  Int
-  price     Int
+  price     Int      // Price in paise at time of order
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
 }
 
 enum OrderStatus {
-  PROCESSING
-  SHIPPED
+  PLACED
+  DELIVERING
   DELIVERED
   CANCELLED
 }

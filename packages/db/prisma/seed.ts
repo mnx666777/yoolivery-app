@@ -3,30 +3,202 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  const cats = [
-    { name: 'Whisky', slug: 'whisky' },
-    { name: 'Rum', slug: 'rum' },
-    { name: 'Vodka', slug: 'vodka' },
-    { name: 'Beer', slug: 'beer' },
-    { name: 'Wine', slug: 'wine' },
-  ];
-  for (const c of cats) {
-    await prisma.category.upsert({ where: { slug: c.slug }, update: {}, create: c });
-  }
-  const whisky = await prisma.category.findUnique({ where: { slug: 'whisky' } });
-  const beer = await prisma.category.findUnique({ where: { slug: 'beer' } });
-  if (!whisky || !beer) return;
+  console.log('🌱 Seeding database...');
 
-  await prisma.product.createMany({
-    data: [
-      { name: "McDowell's No.1 750ml", description: 'Smooth Indian whisky', price: 68000, image: 'https://picsum.photos/seed/whisky/400/600', stock: 50, categoryId: whisky.id },
-      { name: 'Old Monk 750ml', description: 'Iconic dark rum', price: 56000, image: 'https://picsum.photos/seed/rum/400/600', stock: 60, categoryId: (await prisma.category.findUnique({ where: { slug: 'rum' } }))!.id },
-      { name: 'Kingfisher Strong 650ml', description: 'Crisp lager', price: 19000, image: 'https://picsum.photos/seed/beer/400/600', stock: 200, categoryId: beer.id },
-    ],
-    skipDuplicates: true,
-  });
+  // Create categories
+  const categories = await Promise.all([
+    prisma.category.upsert({
+      where: { slug: 'beer' },
+      update: {},
+      create: { name: 'Beer', slug: 'beer' }
+    }),
+    prisma.category.upsert({
+      where: { slug: 'wine' },
+      update: {},
+      create: { name: 'Wine', slug: 'wine' }
+    }),
+    prisma.category.upsert({
+      where: { slug: 'whisky' },
+      update: {},
+      create: { name: 'Whisky', slug: 'whisky' }
+    }),
+    prisma.category.upsert({
+      where: { slug: 'rum' },
+      update: {},
+      create: { name: 'Rum', slug: 'rum' }
+    }),
+    prisma.category.upsert({
+      where: { slug: 'vodka' },
+      update: {},
+      create: { name: 'Vodka', slug: 'vodka' }
+    }),
+    prisma.category.upsert({
+      where: { slug: 'brandy' },
+      update: {},
+      create: { name: 'Brandy', slug: 'brandy' }
+    })
+  ]);
+
+  console.log('✅ Categories created');
+
+  // Create products
+  const products = [
+    {
+      name: 'Kingfisher Strong 650ml',
+      brand: 'Kingfisher',
+      description: 'Crisp Indian lager with a strong profile. Great with spicy snacks.',
+      price: 19000, // ₹190 in paise
+      image: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400',
+      volumeMl: 650,
+      abv: 5.0,
+      origin: 'India',
+      rating: 4.2,
+      stock: 50,
+      categorySlug: 'beer'
+    },
+    {
+      name: "McDowell's No.1 750ml",
+      brand: "McDowell's",
+      description: 'Smooth and balanced Indian whisky with hints of caramel and oak.',
+      price: 68000, // ₹680 in paise
+      image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400',
+      volumeMl: 750,
+      abv: 42.8,
+      origin: 'India',
+      rating: 4.0,
+      stock: 30,
+      categorySlug: 'whisky'
+    },
+    {
+      name: 'Old Monk 750ml',
+      brand: 'Old Monk',
+      description: 'Iconic dark rum with rich vanilla notes. A North-East favorite.',
+      price: 56000, // ₹560 in paise
+      image: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400',
+      volumeMl: 750,
+      abv: 42.8,
+      origin: 'India',
+      rating: 4.5,
+      stock: 25,
+      categorySlug: 'rum'
+    },
+    {
+      name: 'Imphal Dry Lager 500ml',
+      brand: 'Imphal Breweries',
+      description: 'Clean, refreshing lager inspired by the valley climate of Manipur.',
+      price: 18000, // ₹180 in paise
+      image: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400',
+      volumeMl: 500,
+      abv: 4.5,
+      origin: 'Manipur',
+      rating: 4.1,
+      stock: 40,
+      categorySlug: 'beer'
+    },
+    {
+      name: 'Hills Brandy 750ml',
+      brand: 'Hills Distillers',
+      description: 'Warm brandy with fruity aromas, popular in the hills during winters.',
+      price: 64000, // ₹640 in paise
+      image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400',
+      volumeMl: 750,
+      abv: 40.0,
+      origin: 'North-East India',
+      rating: 4.0,
+      stock: 20,
+      categorySlug: 'brandy'
+    },
+    {
+      name: 'Smirnoff Red 750ml',
+      brand: 'Smirnoff',
+      description: 'Premium vodka with smooth taste and clean finish.',
+      price: 85000, // ₹850 in paise
+      image: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400',
+      volumeMl: 750,
+      abv: 40.0,
+      origin: 'Russia',
+      rating: 4.3,
+      stock: 15,
+      categorySlug: 'vodka'
+    },
+    {
+      name: 'Sula Red Wine 750ml',
+      brand: 'Sula',
+      description: 'Rich and fruity red wine with notes of berries and spice.',
+      price: 120000, // ₹1200 in paise
+      image: 'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400',
+      volumeMl: 750,
+      abv: 13.5,
+      origin: 'India',
+      rating: 4.4,
+      stock: 25,
+      categorySlug: 'wine'
+    }
+  ];
+
+  for (const productData of products) {
+  const category = categories.find(c => c.slug === productData.categorySlug);
+  if (category) {
+    try {
+      // If a product with the same name already exists, skip creating it.
+      // We use findFirst because `name` is not unique in the schema.
+      const existing = await prisma.product.findFirst({
+        where: { name: productData.name }
+      });
+
+      if (existing) {
+        // Skip duplicates
+        continue;
+      }
+
+      await prisma.product.create({
+        data: {
+          name: productData.name,
+          brand: productData.brand,
+          description: productData.description ?? null,
+          price: productData.price,
+          image: productData.image ?? null,
+          volumeMl: productData.volumeMl ?? null,
+          abv: productData.abv ?? null,
+          origin: productData.origin ?? null,
+          rating: productData.rating ?? null,
+          stock: productData.stock ?? 0,
+          categoryId: category.id
+        }
+      });
+    } catch (err) {
+      console.error('Failed to create product', productData.name, err);
+    }
+  }
 }
 
-main().finally(async () => {
-  await prisma.$disconnect();
-});
+  console.log('✅ Products created');
+
+  // Create a demo user
+  const demoUser = await prisma.user.upsert({
+    where: { email: 'demo@yoolivery.com' },
+    update: {},
+    create: {
+      name: 'Demo User',
+      email: 'demo@yoolivery.com',
+      password: '$2a$10$rQZ8kF5YhL9vM8N7B6cQCOQZ8kF5YhL9vM8N7B6cQCOQZ8kF5YhL9vM', // 'password123'
+      phone: '+91 9876543210',
+      address: 'Imphal West, Manipur 795001',
+      dob: '1990-01-01',
+      aadhaarLast4: '1234'
+    }
+  });
+
+  console.log('✅ Demo user created');
+
+  console.log('🎉 Database seeded successfully!');
+}
+
+main()
+  .catch((e) => {
+    console.error('❌ Error seeding database:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

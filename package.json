@@ -1,1 +1,22 @@
-{name:yoolivery-monorepo,private:true,packageManager:pnpm@9,workspaces:[apps/*,packages/*],scripts:{dev:web:pnpm --filter @yoolivery/web dev,dev:mobile:cd apps/mobile; npm start,build:pnpm -r build,lint:pnpm -r lint}}
+{
+  "name": "yoolivery-monorepo",
+  "private": true,
+  "packageManager": "pnpm@9",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev:web": "pnpm --filter @yoolivery/web dev",
+    "dev:mobile": "cd apps/mobile && npm start",
+    "dev:api": "cd packages/api && npm run dev",
+    "dev:db": "cd packages/db && npm run prisma:generate",
+    "dev": "concurrently \"pnpm dev:db\" \"pnpm dev:api\" \"pnpm dev:web\"",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:seed": "docker-compose exec api npm run prisma:seed",
+    "setup": "pnpm install && pnpm dev:db && pnpm docker:up && pnpm docker:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
